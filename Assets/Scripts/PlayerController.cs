@@ -7,11 +7,13 @@ public class PlayerController : MonoBehaviour
 
     Rigidbody rb;
     InputAction moveAction;
+    InputAction jumpAction;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         moveAction = InputSystem.actions.FindAction("Move");
+        jumpAction = InputSystem.actions.FindAction("Jump");
     }
 
     void Update()
@@ -19,6 +21,16 @@ public class PlayerController : MonoBehaviour
         var rawInput = moveAction.ReadValue<Vector2>();
         var clampInput = Vector2.ClampMagnitude(rawInput, 1f);
 
-        transform.Translate(new Vector3(clampInput.x, 0, clampInput.y) * moveSpeed * Time.deltaTime);
+        transform.Translate(Vector3.right * clampInput * moveSpeed * Time.deltaTime);
+
+        if (jumpAction.inProgress && rb.linearVelocity.y < 6f)
+        {
+            float mass = rb.mass;
+            Vector3 acceleration = Vector3.up * 5f;
+
+            Vector3 force = mass * acceleration;
+
+            rb.AddForce(force, ForceMode.Force);
+        }
     }
 }
