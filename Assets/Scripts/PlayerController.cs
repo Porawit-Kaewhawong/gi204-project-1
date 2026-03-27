@@ -38,6 +38,11 @@ public class PlayerController : MonoBehaviour
         var inputValue = moveAction.ReadValue<Vector2>();
 
         rb.AddForce(new Vector3(inputValue.x, inputValue.y, 0) * speed);
+
+        if (rb.linearVelocity.magnitude > 10f)
+        {
+            rb.linearVelocity = rb.linearVelocity.normalized * speed;
+        }
     }
 
     void OnCollisionEnter(Collision collision)
