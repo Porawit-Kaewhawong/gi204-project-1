@@ -1,9 +1,11 @@
+using TMPro;
 using UnityEngine;
 
 public class DeliveryZone : MonoBehaviour
 {
     public int totalCargo;
     public int currentCargoDelivered;
+    public TextMeshPro text;
 
     public GameObject door;
     public Material successColor;
@@ -22,9 +24,10 @@ public class DeliveryZone : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Crate") && playerController.attachedCrate == null)
         {
-            Debug.Log("Cargo Delivered!");
             currentCargoDelivered++;
             Destroy(other.gameObject);
+            text.text = currentCargoDelivered + " / " + totalCargo;
+            Debug.Log("Cargo Delivered!");
 
             if (currentCargoDelivered >= totalCargo)
             {
