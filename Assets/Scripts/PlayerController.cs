@@ -3,34 +3,68 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    public float moveSpeed = 4f;
+    [Header("Movement Settings")]
+    public float speed = 10f;
+    public float rotation = 1f;
 
-    Rigidbody rb;
-    InputAction moveAction;
-    InputAction jumpAction;
+    private Rigidbody rb;
+    private InputAction moveAction;
+
+    private FixedJoint joint;
+    private GameObject attachedCrate;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+
         moveAction = InputSystem.actions.FindAction("Move");
-        jumpAction = InputSystem.actions.FindAction("Jump");
     }
 
     void Update()
     {
-        var rawInput = moveAction.ReadValue<Vector2>();
-        var clampInput = Vector2.ClampMagnitude(rawInput, 1f);
-
-        transform.Translate(Vector3.right * clampInput * moveSpeed * Time.deltaTime);
-
-        if (jumpAction.inProgress && rb.linearVelocity.y < 6f)
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            float mass = rb.mass;
-            Vector3 acceleration = Vector3.up * 5f;
+            ReleaseCrate();
+        }
+    }
 
-            Vector3 force = mass * acceleration;
+    void FixedUpdate()
+    {
+        Movement();
+    }
 
-            rb.AddForce(force, ForceMode.Force);
+    void Movement()
+    {
+        var inputValue = moveAction.ReadValue<Vector2>();
+
+        rb.AddForce(new Vector3(inputValue.x, inputValue.y, 0) * speed);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (attachedCrate == null && collision.gameObject.CompareTag("Crate"))
+        {
+            attachedCrate = collision.gameObject;
+            Rigidbody createRb = attachedCrate.GetComponent<Rigidbody>();
+
+            if (createRb != null)
+            {
+                joint = gameObject.AddComponent<FixedJoint>();
+                joint.connectedBody = createRb;
+
+                Debug.Log("Crate Attached");
+            }
+        }
+    }
+
+    void ReleaseCrate()
+    {
+        if (joint.connectedBody != null)
+        {
+            Destroy(joint);
+            attachedCrate = null;
+
+            Debug.Log("Crate Released");
         }
     }
 }
